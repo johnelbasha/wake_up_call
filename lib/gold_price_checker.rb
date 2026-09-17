@@ -3,6 +3,7 @@ require 'faraday'
 require "json"
 # require "uri"
 
+# This class is only responsible for fetching data about the gold price from external APIs
 class GoldPriceChecker
   def fetch_metal_rates
     api_key = ENV.fetch("METALS_DEV_API_KEY")

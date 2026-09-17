@@ -1,21 +1,28 @@
+require "dotenv"
+Dotenv.load
+
 require_relative 'emailer'
 require_relative 'gold_price_checker'
+require_relative 'daily_report'
 
 class Task
   def run
-    welcome_message = "Hello from your Hetzner VPS!, the time now is: #{Time.now}"
-    puts welcome_message
+    if ENV.fetch("TURN_ON_METALS_PRICE") == "true"
+      price_checker = GoldPriceChecker.new
+      
+      gold_price = price_checker.fetch_gold_price
+    else
+      gold_price = "3927.239"
+    end
 
-    price_checker = GoldPriceChecker.new
+    subject = "Daily update"
+    html = DailyReport.new(gold_price: gold_price).render
 
-    gold_price = price_checker.fetch_gold_price
-
-    message = "#{welcome_message} The price of gold is: #{gold_price} USD"
-
-    puts message
-    puts '%%%%%'
-
-    Emailer.new.send_email(message)
-    # Emailer.new.send_email('test')
+    if ENV.fetch("TURN_ON_EMAILING") == "true"
+      Emailer.new.send_email(subject, html)
+    else
+      File.write("tmp/email_preview.html", html)
+    end
+    
   end
 end
